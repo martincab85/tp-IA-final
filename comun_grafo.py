@@ -13,11 +13,9 @@ G.add_nodes_from(nodos)
 
 # Añadir uniones con pesos
 uniones = [
-    ('A', 'X', {'weight': 1}), ('A', 'P', {'weight': 2}),
-    ('A', 'F', {'weight': 1}),
-    ('X', 'S', {'weight': 3}), ('X', 'B', {'weight': 2}),
-    ('P', 'F', {'weight': 2}), ('P', 'S', {'weight': 2}),
-    ('S', 'B', {'weight': 2}),
+    ('A', 'X'), ('A', 'P'), ('A', 'F'),
+    ('X', 'S'), ('X', 'B'), ('P', 'F'),
+    ('P', 'S'), ('S', 'B'),
 ]
 G.add_edges_from(uniones)
 
@@ -29,15 +27,56 @@ if nodo_inicial not in nodos or nodo_final not in nodos:
     print(f"El nodo inicial {nodo_inicial} o nodo final {
           nodo_final} no se encuentran en la lista de nodos")
 
-uniones_locales = []
-# Iterar sobre las uniones
-for union in uniones:
-    if nodo_inicial == union[0] or nodo_inicial == union[1]:  # Verificar si el nodo inicial está en la unión
-        uniones_locales.append(union)
+nodos_actuales = {nodo_inicial: True}  # A
+nodos_sucesores = []
 
-nodo_actual = nodo_inicial # A
+def get_uniones(nodo):
+    uniones_locales = []
+    # Iterar sobre las uniones
+    for union in uniones:
+        # Verificar si el nodo inicial está en la unión
+        if nodo == union[0]:
+            uniones_locales.append(union[1])
+        elif nodo == union[1]:
+            uniones_locales.append(union[0])
+    return uniones_locales
 
-print(uniones_locales)
+def get_actual_node():
+    true_keys = [key for key, value in nodos_actuales.items() if value]
+    true_key = true_keys[0]
+    return true_key
+
+def check_nodo_siguiente():
+    nodo_actual = get_actual_node()
+    nodo_siguiente = min(get_uniones(nodo_actual))  # F
+
+    print(nodo_actual)
+    print(nodo_siguiente)
+
+    if nodo_siguiente != nodo_final:
+        # agrego a la lista de nodos sucesores el expandido
+        nodos_sucesores.append(nodo_siguiente)
+
+        nodo_actual_value = dlr[nodo_actual]
+        nodo_siguiente_value = dlr[nodo_siguiente]
+
+        if nodo_siguiente_value <= nodo_actual_value:
+            nodos_actuales[nodo_actual] = False
+            nodos_actuales[nodo_siguiente] = True
+        
+        
+
+        get_uniones(nodo_actual)
+        print(nodos_actuales)
+        print(nodos_sucesores)
+    else:
+        print('se termino el programa')
+        print(nodos_actuales)
+        print(nodos_sucesores)
+
+
+check_nodo_siguiente()
+
 
 # # Calcular el camino más corto
 # shortest_path = nx.shortest_path(G, source=nodo_inicial, target=nodo_final)
