@@ -34,7 +34,9 @@ uniones_locales = []
 for union in uniones:
     if nodo_inicial == union[0] or nodo_inicial == union[1]:  # Verificar si el nodo inicial está en la unión
         uniones_locales.append(union)
-        
+
+nodo_actual = nodo_inicial # A
+
 print(uniones_locales)
 
 # # Calcular el camino más corto
