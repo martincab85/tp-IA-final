@@ -1,27 +1,42 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import tkinter as tk
 
 # Crear un grafo
 G = nx.Graph()
 
 # distancias en linea recta al nodo "B"
-dlr = {"A": 77, "B": 00, "X": 55, "F": 12, "P": 10, "S": 22}
+# grafo 20.1
+dlr = {"A": 60, "B": 40, "C": 50, "D": 10, "E": 20, "F": 00}
+# grafo 20.2
+# dlr = {"A": 77, "B": 00, "X": 55, "F": 12, "P": 10, "S": 22}
 
 # Añadir nodos
-nodos = ['A', 'X', 'P', 'F', 'S', 'B']
+# grafo 20.1
+nodos = ['A', 'B', 'C', 'D', 'E', 'F']
+# grafo 20.2
+# nodos = ['A', 'X', 'P', 'F', 'S', 'B']
 G.add_nodes_from(nodos)
 
 # Añadir uniones con pesos
+# grafo 20.1
 uniones = [
-    ('A', 'X'), ('A', 'P'), ('A', 'F'),
-    ('X', 'S'), ('X', 'B'), ('P', 'F'),
-    ('P', 'S'), ('S', 'B'),
+    ('A', 'B'), ('A', 'E'), ('A', 'D'),
+    ('B', 'C'), ('B', 'E'), ('B', 'D'), ('B', 'F'),
+    ('C', 'D'), ('C', 'F'),
+    ('D', 'E'),
 ]
+# grafo 20.2
+# uniones = [
+#     ('A', 'X'), ('A', 'P'), ('A', 'F'),
+#     ('X', 'S'), ('X', 'B'), ('P', 'F'),
+#     ('S', 'F'), ('P', 'S'), ('S', 'B'),
+# ]
 G.add_edges_from(uniones)
 
 # Nodo inicial previamente seleccionado
 nodo_inicial = 'A'  # Cambiar a cualquier nodo deseado
-nodo_final = 'B'  # Cambiar a cualquier nodo deseado
+nodo_final = 'F'  # Cambiar a cualquier nodo deseado
 
 if nodo_inicial not in nodos or nodo_final not in nodos:
     print(f"El nodo inicial {nodo_inicial} o nodo final {
@@ -30,52 +45,78 @@ if nodo_inicial not in nodos or nodo_final not in nodos:
 nodos_actuales = {nodo_inicial: True}  # A
 nodos_sucesores = []
 
+
 def get_uniones(nodo):
     uniones_locales = []
+    nodo_actual_value = dlr[nodo]
     # Iterar sobre las uniones
     for union in uniones:
         # Verificar si el nodo inicial está en la unión
-        if nodo == union[0]:
+        if nodo == union[0] and union[1] not in nodos_actuales:
             uniones_locales.append(union[1])
-        elif nodo == union[1]:
+        elif nodo == union[1] and union[0] not in nodos_actuales:
             uniones_locales.append(union[0])
     return uniones_locales
+
 
 def get_actual_node():
     true_keys = [key for key, value in nodos_actuales.items() if value]
     true_key = true_keys[0]
     return true_key
 
+
 def check_nodo_siguiente():
+    global nodos_actuales
+
     nodo_actual = get_actual_node()
-    nodo_siguiente = min(get_uniones(nodo_actual))  # F
+    uniones = get_uniones(nodo_actual)
 
-    print(nodo_actual)
-    print(nodo_siguiente)
-
-    if nodo_siguiente != nodo_final:
-        # agrego a la lista de nodos sucesores el expandido
+    while uniones:
+        nodo_siguiente = min(uniones) if uniones else None
         nodos_sucesores.append(nodo_siguiente)
 
         nodo_actual_value = dlr[nodo_actual]
         nodo_siguiente_value = dlr[nodo_siguiente]
 
+        print(nodo_actual, ' --- nodo actual')
+        print(uniones, ' --- uniones')
+        print(nodo_siguiente, ' --- nodo siguiente')
+        print(nodos_sucesores, ' --- nodos succesores')
+
         if nodo_siguiente_value <= nodo_actual_value:
             nodos_actuales[nodo_actual] = False
             nodos_actuales[nodo_siguiente] = True
-        
-        
+            print(nodos_actuales, ' --- nodos actuales')
+            print('-----------------------------------------------------')
+            print('\n')
+            break
+        else:
+            uniones.remove(nodo_siguiente)
 
-        get_uniones(nodo_actual)
-        print(nodos_actuales)
-        print(nodos_sucesores)
+        label.config(text=f"Nodo actual: {nodo_siguiente}")
     else:
         print('se termino el programa')
         print(nodos_actuales)
         print(nodos_sucesores)
 
 
-check_nodo_siguiente()
+# Crear ventana
+window = tk.Tk()
+window.title("Interfaz para iterar")
+
+# Crear etiqueta para mostrar el nodo actual
+label = tk.Label(window, text="Nodo actual:")
+label.pack()
+
+# Crear botón para llamar a la función
+button = tk.Button(window, text="Siguiente Iteración",
+                   command=check_nodo_siguiente)
+button.pack()
+
+# Iniciar bucle de eventos
+window.mainloop()
+
+# check_nodo_siguiente()
 
 
 # # Calcular el camino más corto
