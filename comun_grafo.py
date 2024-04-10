@@ -62,11 +62,11 @@ def check_nodo_siguiente(ax, canvas, G):
             if nodo_siguiente not in nodos_sucesores:
                 nodos_sucesores.append(nodo_siguiente)
 
-            # Redibujar
-            redibujar(ax, canvas, G, nodo_actual, nodo_siguiente)
-
             nodo_actual_value = dlr[nodo_actual]
             nodo_siguiente_value = dlr[nodo_siguiente]
+
+            # Redibujar
+            redibujar(ax, canvas, G, nodo_actual, nodo_siguiente)
 
             print(nodo_actual, ' --- nodo actual')
             print(uniones, ' --- uniones')
@@ -80,6 +80,8 @@ def check_nodo_siguiente(ax, canvas, G):
                 print(nodos_actuales, ' --- nodos actuales')
                 print('-----------------------------------------------------')
                 print('\n')
+                # Redibujar después de actualizar nodos actuales
+                redibujar(ax, canvas, G, nodo_actual, nodo_siguiente)
                 break
             else:
                 uniones.remove(nodo_siguiente)
@@ -96,13 +98,32 @@ def redibujar(ax, canvas, G, nodo_actual, nodo_siguiente):
 
     # Limpiar el eje antes de redibujar el grafo
     ax.clear()
+
+    # Crear un diccionario de colores de bordes
+    edge_colors = {}
+    for edge in G.edges():
+        if edge[0] in nodos_actuales and edge[1] in nodos_actuales:
+            edge_colors[edge] = 'green'
+        else:
+            edge_colors[edge] = 'black'
+
     # Redibujar el grafo con los nodos actuales y las conexiones
     pos = nx.spring_layout(G, seed=42)
     nx.draw(G, pos, with_labels=True, node_color='skyblue', node_size=700,
-            edge_color='black', linewidths=1, font_size=10, ax=ax)
+            linewidths=1, font_size=10, ax=ax)
     nx.draw_networkx_nodes(G, pos=pos, nodelist=[
                            nodo_inicial], node_color='red', node_size=700, ax=ax)
-    nx.draw_networkx_edges(G, pos=pos, edgelist=G.edges(), ax=ax)
+    if nodo_final in nodos_actuales:
+        nx.draw_networkx_nodes(G, pos=pos, nodelist=[
+                           nodo_final], node_color='green', node_size=700, ax=ax)
+    nx.draw_networkx_edges(G, pos=pos, edgelist=G.edges(), edge_color=[
+                           edge_colors[edge] for edge in G.edges()], ax=ax)
+    
+    # Mostrar nodos actuales y sucesores en tiempo real
+    nodos_actuales_texto = f'Nodos actuales: {", ".join(nodos_actuales.keys())}'
+    nodos_sucesores_texto = f'Nodos sucesores: {", ".join(nodos_sucesores)}' if nodos_sucesores else 'Nodos sucesores: Ninguno'
+    ax.text(0.02, 0.05, nodos_actuales_texto, horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes, fontsize=10, color='black')
+    ax.text(0.02, 0.01, nodos_sucesores_texto, horizontalalignment='left', verticalalignment='bottom', transform=ax.transAxes, fontsize=10, color='black')
 
     # Actualizar el título del gráfico
     ax.set_title(f'Paso: {len(nodos_actuales)}')
@@ -132,7 +153,7 @@ def mostrar_grafo_inicial():
     canvas = FigureCanvasTkAgg(fig, master=window)
     # Muestra en grafo en la ventana Tkinter
     canvas.draw()
-    # canvas.get_tk_widget() devuelve el (canvas) que ha sido creado previamente con FigureCanvasTkAgg. 
+    # canvas.get_tk_widget() devuelve el (canvas) que ha sido creado previamente con FigureCanvasTkAgg.
     # Este método se utiliza para obtener el widget de lienzo en sí mismo.
     # .pack() es un método que se utiliza para empaquetar el widget en la ventana principal o en otro contenedor de Tkinter.
     canvas.get_tk_widget().pack()
@@ -167,6 +188,7 @@ def paso_siguiente(ax, canvas, G):
 
 def on_closing():
     window.quit()
+
 
 # Configuración de la ventana principal
 # Crea instancia de la grafica de window
